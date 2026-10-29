@@ -1,8 +1,16 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+// hosting dashboards often hold values like `Production`, `"production"`, `prod` or an empty string
+const ALIASES = { dev: 'development', prod: 'production' };
+const nodeEnv = z.preprocess((v) => {
+  if (typeof v !== 'string') return v;
+  const clean = v.trim().replace(/^["']|["']$/g, '').trim().toLowerCase();
+  return clean === '' ? undefined : (ALIASES[clean] ?? clean);
+}, z.enum(['development', 'test', 'production']).default('development'));
+
 const schema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  NODE_ENV: nodeEnv,
   PORT: z.coerce.number().default(5000),
   MONGO_URI: z.string().min(1),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
@@ -16,7 +24,10 @@ const schema = z.object({
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
-  console.error('Invalid environment configuration:', parsed.error.flatten().fieldErrors);
+  const fieldErrors = parsed.error.flatten().fieldErrors;
+  console.error('Invalid environment configuration:', fieldErrors);
+  // safe to print: NODE_ENV is not a secret, and seeing the raw value makes typos obvious
+  if (fieldErrors.NODE_ENV) console.error(`NODE_ENV received: ${JSON.stringify(process.env.NODE_ENV)}`);
   process.exit(1);
 }
 

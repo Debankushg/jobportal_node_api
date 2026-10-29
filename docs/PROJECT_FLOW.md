@@ -194,3 +194,38 @@ If validation or the service rejects the request, the uploaded file is deleted a
 | Change a business rule | `services/` only |
 | Change allowed input | `validators/` only |
 | Add a setting | `.env`, `.env.example`, `config/env.js` |
+
+---
+
+## 7. Admin account (development only)
+
+Admins cannot register through the API (`role: "admin"` is rejected on `/auth/register`), so they are created directly in the database with the `create-admin` script ([`scripts/create-admin.js`](../scripts/create-admin.js)).
+
+**Dev account** (created in the development database this project was set up with):
+
+| | |
+|---|---|
+| Email | `admin@jobportal.local` |
+| Password | `RLea_qSR7Zmr0dtW` |
+
+> These credentials are for **local development only**. Never reuse them in staging or production, and change the password if the database is shared. The account only exists in the database it was created in, so on a fresh database create your own (below).
+
+**Create an admin in your own database**
+
+```bash
+# random password, printed once
+npm run create-admin -- someone@example.com "Their Name"
+
+# or choose the password yourself (8–72 characters)
+ADMIN_PASSWORD='your-own-password' npm run create-admin -- someone@example.com
+```
+
+If the email already exists the script changes nothing. Run it from `backend/` with `MONGO_URI` set in `.env`.
+
+**What an admin can do**
+
+| Area | Access |
+|---|---|
+| Users | list, view and delete any user (`/users`, `/admin/users` in the frontend) |
+| Jobs | edit or delete any job, not only their own |
+| Applications | view applications for any job and change their status |
