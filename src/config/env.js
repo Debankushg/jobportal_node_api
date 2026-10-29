@@ -15,7 +15,7 @@ const schema = z.object({
   MONGO_URI: z.string().min(1),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   JWT_EXPIRES_IN: z.string().default('1d'),
-  // public origin used to build file links in API responses; defaults to http://localhost:PORT
+  // public origin used to build file links in API responses; defaults to RENDER_EXTERNAL_URL, then http://localhost:PORT
   BASE_URL: z.string().url().optional(),
   CORS_ORIGIN: z.string().default('*'),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
@@ -31,4 +31,10 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export default { ...parsed.data, BASE_URL: (parsed.data.BASE_URL || `http://localhost:${parsed.data.PORT}`).replace(/\/$/, '') };
+if (parsed.data.NODE_ENV === 'production' && /\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])[:/]/.test(parsed.data.MONGO_URI))
+  console.warn('WARNING: MONGO_URI points at localhost in production. A hosted server cannot reach your local MongoDB; use a hosted database such as MongoDB Atlas.');
+
+// BASE_URL wins; on Render the platform provides RENDER_EXTERNAL_URL; otherwise assume local development
+const baseUrl = parsed.data.BASE_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${parsed.data.PORT}`;
+
+export default { ...parsed.data, BASE_URL: baseUrl.replace(/\/$/, '') };

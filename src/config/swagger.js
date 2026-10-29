@@ -9,7 +9,7 @@ export default swaggerJsdoc({
       version: '1.0.0',
       description: 'REST API for the Job Portal. Authenticate via /auth/login, then click "Authorize" and paste the token.',
     },
-    servers: [{ url: `http://localhost:${env.PORT}/api/v1`, description: 'Local' }],
+    servers: [{ url: `${env.BASE_URL}/api/v1`, description: env.NODE_ENV === 'production' ? 'Production' : 'Local' }],
     tags: [
       { name: 'Auth' },
       { name: 'Users' },
