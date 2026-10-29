@@ -3,6 +3,9 @@ import User from '../models/user.model.js';
 export const findById = (id) => User.findById(id);
 export const findByEmailWithPassword = (email) => User.findOne({ email }).select('+password');
 export const existsByEmail = (email) => User.exists({ email });
+export const findByEmail = (email) => User.findOne({ email });
+export const findByProvider = (provider, providerId) => User.findOne({ providers: { $elemMatch: { provider, providerId } } });
+export const save = (user) => user.save();
 export const create = (data) => User.create(data);
 
 export const findPage = async ({ skip, limit }) => {

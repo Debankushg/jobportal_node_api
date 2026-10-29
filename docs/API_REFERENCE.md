@@ -123,6 +123,12 @@ Creates an account and returns the user together with a JWT, so the client is lo
 | `401` | Invalid email or password (same message for both, to avoid account enumeration) |
 | `429` | Auth rate limit exceeded |
 
+### 3.3 Social login — `GET /auth/:provider` and `GET /auth/:provider/callback`
+
+Sign in or sign up with `google`, `github` or `linkedin`. These are **browser redirects**, not JSON endpoints: open `/auth/:provider` (optionally `?role=candidate|employer` for new accounts) and the user is sent to the provider, then back to `FRONTEND_URL/auth/callback#token=<jwt>&new=<0|1>` (or `#error=<code>`). Setup, account-linking rules and error codes are in [SOCIAL_LOGIN.md](./SOCIAL_LOGIN.md).
+
+Users created this way have no password; `GET /users/me` includes `authProviders` (e.g. `["google"]`) and `avatar` may be a full external URL.
+
 ---
 
 ## 4. Users
